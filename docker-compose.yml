@@ -1,0 +1,66 @@
+version: '3.5'
+services:
+  alice:
+    build:
+      context: ./node/
+    volumes:
+      - ${DATA_PATH}/alice/:/home/beam/data/
+    ports:
+      - "11001:11001"
+    environment:
+      - OWNER_KEY=${ALICE_OWNER_KEY}
+      - MINER_KEY=${ALICE_MINER_KEY}
+      - PEER=bob:11002
+      - PORT=11001
+  bob:
+    build:
+      context: ./node/
+    volumes:
+      - ${DATA_PATH}/bob/:/home/beam/data/
+    ports:
+      - "11002:11002"
+    depends_on:
+      - alice
+    environment:
+      - OWNER_KEY=${BOB_OWNER_KEY}
+      - MINER_KEY=${BOB_MINER_KEY}
+      - PEER=alice:11001
+      - PORT=11002
+  jim:
+    build:
+      context: ./node/
+    volumes:
+      - ${DATA_PATH}/jim/:/home/beam/data/
+    ports:
+      - "11003:11003"
+    depends_on:
+      - bob
+    environment:
+      - OWNER_KEY=${JIM_OWNER_KEY}
+      - MINER_KEY=${JIM_MINER_KEY}
+      - PEER=alice:11001,bob:11002
+      - PORT=11003
+  api:
+    build:
+      context: ./wallet-api/
+    restart: always
+    volumes:
+      - ${DATA_PATH}/api/:/home/beam/data/
+    ports:
+      - "11011:11011"
+    environment:
+      - NODE_ADR=jim:11003
+      - SEED_PHRASE=${JIM_SEED_PHRASE}
+      - WALLET_PASS=1
+    depends_on:
+      - jim
+  geth:
+    build: ./eth/
+    volumes:
+      - ${DATA_PATH}/eth/:/home/geth/data/
+    stop_signal: SIGINT
+    stop_grace_period: 20s
+    ports:
+      - "4321:4321"
+      - "8543:8543"
+      - "8546:8546"

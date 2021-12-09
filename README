@@ -1,0 +1,4 @@
+1. fill in .env file
+2. build project: docker-compose build
+3. run: docker-compose up -d
+
