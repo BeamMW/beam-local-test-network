@@ -9,3 +9,4 @@ else
   echo 'geth is already initialized! Ready for start up.'
   echo
 fi
+
